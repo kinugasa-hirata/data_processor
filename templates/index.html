@@ -3,39 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Vercel Project</title>
-    <script src="https://unpkg.com/typescript@latest/lib/typescriptServices.js"></script>
+    <title>Data Processor</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        #results {
+            white-space: pre-wrap;
+        }
+    </style>
 </head>
 <body>
-    <h1>Hi there!</h1>
-    <p>Welcome to our simple webpage.</p>
-    <a href="/subpage">Go to subpage</a>
-    <div id="message"></div>
+    <h1>Data Processor</h1>
+    
+    <div class="section">
+        <h2>Upload Data Files</h2>
+        <input type="file" id="dataFiles" multiple>
+        <button onclick="uploadDataFiles()">Upload</button>
+    </div>
 
-    <script type="text/typescript">
-        fetch('/api/hello')
-            .then(response => response.json())
-            .then(data => {
-                const messageDiv = document.getElementById('message');
-                if (messageDiv) {
-                    messageDiv.textContent = data.message;
-                }
-            });
-    </script>
+    <div class="section">
+        <h2>Upload Excel Template</h2>
+        <input type="file" id="excelFile" accept=".xlsx">
+        <button onclick="exportToExcel()">Export to Excel</button>
+    </div>
+
+    <div class="section">
+        <h2>Results</h2>
+        <pre id="results"></pre>
+    </div>
+
     <script>
-        var script = document.createElement('script');
-        script.src = 'https://unpkg.com/typescript@latest/lib/typescriptServices.js';
-        script.onload = function() {
-            var scripts = document.getElementsByTagName('script');
-            for (var i = 0; i < scripts.length; i++) {
-                if (scripts[i].type == 'text/typescript') {
-                    var source = scripts[i].innerHTML;
-                    var result = ts.transpile(source);
-                    eval(result);
-                }
+        async function uploadDataFiles() {
+            const fileInput = document.getElementById('dataFiles');
+            const formData = new FormData();
+            
+            for (let i = 0; i < fileInput.files.length; i++) {
+                formData.append('file', fileInput.files[i]);
             }
-        };
-        document.head.appendChild(script);
+
+            try {
+                const response = await axios.post('/upload', formData);
+                document.getElementById('results').textContent = JSON.stringify(response.data, null, 2);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('results').textContent = 'Error uploading files';
+            }
+        }
+
+        async function exportToExcel() {
+            const fileInput = document.getElementById('excelFile');
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await axios.post('/export', formData, {
+                    responseType: 'blob'
+                });
+                
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'exported_data.xlsx');
+                document.body.appendChild(link);
+                link.click();
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('results').textContent = 'Error exporting to Excel';
+            }
+        }
     </script>
 </body>
 </html>
