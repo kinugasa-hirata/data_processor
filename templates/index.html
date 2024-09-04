@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Vercel Project</title>
+    <script src="https://unpkg.com/typescript@latest/lib/typescriptServices.js"></script>
+</head>
+<body>
+    <h1>Hi there!</h1>
+    <p>Welcome to our simple webpage.</p>
+    <a href="/subpage">Go to subpage</a>
+    <div id="message"></div>
+
+    <script type="text/typescript">
+        fetch('/api/hello')
+            .then(response => response.json())
+            .then(data => {
+                const messageDiv = document.getElementById('message');
+                if (messageDiv) {
+                    messageDiv.textContent = data.message;
+                }
+            });
+    </script>
+    <script>
+        var script = document.createElement('script');
+        script.src = 'https://unpkg.com/typescript@latest/lib/typescriptServices.js';
+        script.onload = function() {
+            var scripts = document.getElementsByTagName('script');
+            for (var i = 0; i < scripts.length; i++) {
+                if (scripts[i].type == 'text/typescript') {
+                    var source = scripts[i].innerHTML;
+                    var result = ts.transpile(source);
+                    eval(result);
+                }
+            }
+        };
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>
